@@ -1,9 +1,4 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 
 ## Loading and preprocessing the data
@@ -12,43 +7,50 @@ output:
 
 1-1  Create a name for a directory where the zip file is exploded
 
-```{r}
+
+```r
  zipdir <- tempfile()
 ```
 
 1-2 Create a directory using that name
 
-```{r}
+
+```r
  dir.create(zipdir)
 ```
 
 1-3 From the data zip file in git repository, Unzip the file into the dir
 
-```{r}
+
+```r
  unzip("~/git/RepData_PeerAssessment1/activity.zip", exdir=zipdir)
 ```
 
 1-4 Get the files list from the directory
 
-```{r}
+
+```r
  files <- list.files(zipdir)
-``` 
+```
 
 1-5 Throw an error if there's more than one
 
-```{r}
+
+```r
 if(length(files)>1) stop("More than one data file inside zip")
 ```
 
 1-6 Get the full name of the file
 
-```{r}
+
+```r
 file <- paste(zipdir, files[1], sep="/")
-``` 
+```
 
 1-7 Read the file
 
-```{r}
+
+```r
  data <- read.csv(file)
 ```
 
@@ -58,28 +60,42 @@ file <- paste(zipdir, files[1], sep="/")
 
 1-1 Sammarise data by date and compute total number of steps per day
 
-```{r message=FALSE}
+
+```r
 library(dplyr)
 data_per_day <- group_by(data,date) %>% summarise(total_steps = sum(steps, na.rm = TRUE))
 ```
 
 1-2 Then make a histogram 
 
-```{r message=FALSE}
+
+```r
 library(ggplot2)
 ggplot(data_per_day, aes(x=total_steps)) + geom_histogram()
 ```
 
+![plot of chunk unnamed-chunk-9](./PA1_template_files/figure-html/unnamed-chunk-9.png) 
+
 2.Calculate and report the mean and median total number of steps taken per day
 
-2-1 Mean total number of steps taken per day
-```{r}
+2-1 Mean
+
+```r
 mean(data_per_day$total_steps)
 ```
 
-2-2 Median total number of steps taken per day
-```{r}
+```
+## [1] 9354
+```
+
+2-2 Median
+
+```r
 median(data_per_day$total_steps)
+```
+
+```
+## [1] 10395
 ```
 ## What is the average daily activity pattern?
 
@@ -87,54 +103,74 @@ median(data_per_day$total_steps)
 
 1-1 First, calculate average number of steps taken, averaged across all days
 
-```{r}
+
+```r
 data_per_interval <- data %>% group_by(interval) %>% summarize(average_steps = mean(steps, na.rm=TRUE))
 ```
 
 1-2 Plot the time series chart
 
-```{r}
+
+```r
 ggplot(data_per_interval, aes(interval, average_steps)) + geom_line() + 
   xlab("interval") + ylab("the average number of steps taken")
 ```
 
+![plot of chunk unnamed-chunk-13](./PA1_template_files/figure-html/unnamed-chunk-13.png) 
+
 2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
-```{r}
+
+```r
 top_interval <- data_per_interval %>% filter(average_steps == max(average_steps))
 head(top_interval, n=1)
 ```
 
-So the interval `r top_interval$interval` contains the maximum number of steps `r top_interval$average_steps`. 
+```
+## Source: local data frame [1 x 2]
+## 
+##   interval average_steps
+## 1      835         206.2
+```
+
+So the interval 835 contains the maximum number of steps 206.1698. 
 
 ## Imputing missing values
 
 1.Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
 
-```{r}
+
+```r
 data_na <- subset(data, is.na(steps))
 nrow(data_na)
+```
+
+```
+## [1] 2304
 ```
 
 2.Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
 
 So, lets use mean for the day to fill the missing values. So median per day can calcuate like this.
 
-```{r}
+
+```r
 medDF <- data %>% group_by(date) %>% summarize(mean = mean(steps,na.rm = TRUE))
 ```
 
-If calculated means are still NAs, then fill them wize 0.
+If calculated mean is still na, then fill it wize 0.
 
-```{r}
+
+```r
 medDF$mean[is.na(medDF$mean)] <- 0
 ```
 
 3.Create a new dataset that is equal to the original dataset but with the missing data filled in.
 
-Find NAs and fill them with mean from medDF by matching date
+Find the na and fill it with mean from medDF by matching date
 
-```{r}
+
+```r
  data_filled <- data
  data_filled$steps[is.na(data_filled$steps)] <- medDF$mean[match(data_filled$date,medDF$date)][is.na(data_filled$steps)]
 ```
@@ -143,32 +179,46 @@ Find NAs and fill them with mean from medDF by matching date
 
 4-1 Sammarise data by date and compute total number of steps per day
 
-```{r message=FALSE}
+
+```r
 data_filled_per_day <- group_by(data_filled,date) %>% summarise(total_steps = sum(steps, na.rm = TRUE))
 ```
 
 4-2 Then make a histogram 
 
-```{r message=FALSE}
+
+```r
 ggplot(data_filled_per_day, aes(x=total_steps)) + geom_histogram()
 ```
 
+![plot of chunk unnamed-chunk-20](./PA1_template_files/figure-html/unnamed-chunk-20.png) 
+
 
 4-3 Mean of total number of steps taken per day.
-```{r}
+
+```r
 mean(data_filled_per_day$total_steps)
 ```
 
+```
+## [1] 9354
+```
+
 4-4 Median of total number of steps take per day.
-```{r}
+
+```r
 median(data_filled_per_day$total_steps)
+```
+
+```
+## [1] 10395
 ```
 
 4-5 Do these values differ from the estimates from the first part of the assignment? 
 
-As for mean the value (`r mean(data_filled_per_day$total_steps)`), it `r if(mean(data_filled_per_day$total_steps) == mean(data_per_day$total_steps)){"does not differ"}else {"differs"}` from the estimate (`r mean(data_per_day$total_steps)`) from the first part of the assignment
+As for mean the value (9354.2295), it does not differ from the estimate (9354.2295) from the first part of the assignment
 
-As for median the value (`r median(data_filled_per_day$total_steps)`), it `r if(median(data_filled_per_day$total_steps) == median(data_per_day$total_steps)){"does not differ"}else {"differs"}` from the estimate (`r median(data_per_day$total_steps)`) from the first part of the assignment.
+As for median the value (1.0395 &times; 10<sup>4</sup>), it does not differ from the estimate (10395) from the first part of the assignment.
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
@@ -176,13 +226,15 @@ As for median the value (`r median(data_filled_per_day$total_steps)`), it `r if(
 
 1.1 mutate data set to append a new column for weekday
 
-```{r}
+
+```r
 data_category <- data %>% mutate(weekday = weekdays(strptime(date,format="%Y-%m-%d")))
 ```
 
 1.2 set type (either Weekday or Weekend) based on the weekday calculated at previous step.
 
-```{r}
+
+```r
 data_category$type[data_category$weekday != 'Sunday' & data_category$weekday != 'Saturday'] <- 'Weekday'
 data_category$type[data_category$weekday == 'Sunday' | data_category$weekday == 'Saturday'] <- 'Weekend'
 ```
@@ -191,15 +243,19 @@ data_category$type[data_category$weekday == 'Sunday' | data_category$weekday == 
 
 2.1 calculate average number of steps taken, average across all weekday days or weekend days
 
-```{r}
+
+```r
 data_per_interval_by_weektype <- data_category %>% group_by(interval,type) %>% summarize(average_steps = mean(steps, na.rm=TRUE))
 ```
 
 2.2 Make a panel plot containingtime series plots
 
-```{r}
+
+```r
 ggplot(data_per_interval_by_weektype, aes(interval, average_steps)) + geom_line() + 
   facet_wrap(~ type, nrow = 2, ncol = 1) +
   xlab("interval") + ylab("the average number of steps taken")
 ```
+
+![plot of chunk unnamed-chunk-26](./PA1_template_files/figure-html/unnamed-chunk-26.png) 
 
