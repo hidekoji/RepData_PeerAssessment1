@@ -58,12 +58,12 @@ file <- paste(zipdir, files[1], sep="/")
 
 1. Make a histogram of the toal number of steps take each day.  
 
-1-1 Sammarise data by date and compute total number of steps per day
+1-1 Sammarise data by date and compute total number of steps per day (you can ignore the missing values in the dataset.)
 
 
 ```r
 library(dplyr)
-data_per_day <- group_by(data,date) %>% summarise(total_steps = sum(steps, na.rm = TRUE))
+data_per_day <- data %>% filter(!is.na(steps)) %>% group_by(date) %>% summarise(total_steps = sum(steps, na.rm = TRUE))
 ```
 
 1-2 Then make a histogram 
@@ -78,24 +78,24 @@ ggplot(data_per_day, aes(x=total_steps)) + geom_histogram()
 
 2.Calculate and report the mean and median total number of steps taken per day
 
-2-1 Mean
+2-1 Mean total number of steps taken per day
 
 ```r
-mean(data_per_day$total_steps)
+mean(data_per_day$total_steps, na.rm=TRUE)
 ```
 
 ```
-## [1] 9354
+## [1] 10766
 ```
 
-2-2 Median
+2-2 Median total number of steps taken per day
 
 ```r
-median(data_per_day$total_steps)
+median(data_per_day$total_steps, na.rm=TRUE)
 ```
 
 ```
-## [1] 10395
+## [1] 10765
 ```
 ## What is the average daily activity pattern?
 
@@ -158,7 +158,7 @@ So, lets use mean for the day to fill the missing values. So median per day can 
 medDF <- data %>% group_by(date) %>% summarize(mean = mean(steps,na.rm = TRUE))
 ```
 
-If calculated mean is still na, then fill it wize 0.
+If calculated means are still NAs, then fill them wize 0.
 
 
 ```r
@@ -167,7 +167,7 @@ medDF$mean[is.na(medDF$mean)] <- 0
 
 3.Create a new dataset that is equal to the original dataset but with the missing data filled in.
 
-Find the na and fill it with mean from medDF by matching date
+Find NAs and fill them with mean from medDF by matching date
 
 
 ```r
@@ -181,7 +181,7 @@ Find the na and fill it with mean from medDF by matching date
 
 
 ```r
-data_filled_per_day <- group_by(data_filled,date) %>% summarise(total_steps = sum(steps, na.rm = TRUE))
+data_filled_per_day <- data_filled %>% group_by(date) %>% summarise(total_steps = sum(steps, na.rm = TRUE))
 ```
 
 4-2 Then make a histogram 
@@ -197,7 +197,7 @@ ggplot(data_filled_per_day, aes(x=total_steps)) + geom_histogram()
 4-3 Mean of total number of steps taken per day.
 
 ```r
-mean(data_filled_per_day$total_steps)
+mean(data_filled_per_day$total_steps, na.rm = TRUE)
 ```
 
 ```
@@ -207,7 +207,7 @@ mean(data_filled_per_day$total_steps)
 4-4 Median of total number of steps take per day.
 
 ```r
-median(data_filled_per_day$total_steps)
+median(data_filled_per_day$total_steps, na.rm = TRUE)
 ```
 
 ```
@@ -216,9 +216,9 @@ median(data_filled_per_day$total_steps)
 
 4-5 Do these values differ from the estimates from the first part of the assignment? 
 
-As for mean the value (9354.2295), it does not differ from the estimate (9354.2295) from the first part of the assignment
+As for mean the value (9354.2295), it differs from the estimate (1.0766 &times; 10<sup>4</sup>) from the first part of the assignment
 
-As for median the value (1.0395 &times; 10<sup>4</sup>), it does not differ from the estimate (10395) from the first part of the assignment.
+As for median the value (1.0395 &times; 10<sup>4</sup>), it differs from the estimate (10765) from the first part of the assignment.
 
 ## Are there differences in activity patterns between weekdays and weekends?
 

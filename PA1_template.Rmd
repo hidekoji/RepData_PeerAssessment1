@@ -56,11 +56,11 @@ file <- paste(zipdir, files[1], sep="/")
 
 1. Make a histogram of the toal number of steps take each day.  
 
-1-1 Sammarise data by date and compute total number of steps per day
+1-1 Sammarise data by date and compute total number of steps per day (you can ignore the missing values in the dataset.)
 
 ```{r message=FALSE}
 library(dplyr)
-data_per_day <- group_by(data,date) %>% summarise(total_steps = sum(steps, na.rm = TRUE))
+data_per_day <- data %>% filter(!is.na(steps)) %>% group_by(date) %>% summarise(total_steps = sum(steps, na.rm = TRUE))
 ```
 
 1-2 Then make a histogram 
@@ -74,12 +74,12 @@ ggplot(data_per_day, aes(x=total_steps)) + geom_histogram()
 
 2-1 Mean total number of steps taken per day
 ```{r}
-mean(data_per_day$total_steps)
+mean(data_per_day$total_steps, na.rm=TRUE)
 ```
 
 2-2 Median total number of steps taken per day
 ```{r}
-median(data_per_day$total_steps)
+median(data_per_day$total_steps, na.rm=TRUE)
 ```
 ## What is the average daily activity pattern?
 
@@ -144,7 +144,7 @@ Find NAs and fill them with mean from medDF by matching date
 4-1 Sammarise data by date and compute total number of steps per day
 
 ```{r message=FALSE}
-data_filled_per_day <- group_by(data_filled,date) %>% summarise(total_steps = sum(steps, na.rm = TRUE))
+data_filled_per_day <- data_filled %>% group_by(date) %>% summarise(total_steps = sum(steps, na.rm = TRUE))
 ```
 
 4-2 Then make a histogram 
@@ -156,12 +156,12 @@ ggplot(data_filled_per_day, aes(x=total_steps)) + geom_histogram()
 
 4-3 Mean of total number of steps taken per day.
 ```{r}
-mean(data_filled_per_day$total_steps)
+mean(data_filled_per_day$total_steps, na.rm = TRUE)
 ```
 
 4-4 Median of total number of steps take per day.
 ```{r}
-median(data_filled_per_day$total_steps)
+median(data_filled_per_day$total_steps, na.rm = TRUE)
 ```
 
 4-5 Do these values differ from the estimates from the first part of the assignment? 
